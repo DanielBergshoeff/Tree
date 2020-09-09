@@ -1,10 +1,12 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.InputSystem;
 using UnityStandardAssets.Characters.ThirdPerson;
 
 public class WallClimber : MonoBehaviour
 {
+    public float MoveSpeed = 3f;
     public float ClimbForce = 1f;
     public float SmallestEdge = 0.25f;
     public float MaxAngle = 30f;
@@ -13,6 +15,7 @@ public class WallClimber : MonoBehaviour
     public float ClimbRange = 2f;
     public float JumpForce = 1f;
     public ClimbingType CurrentType;
+    public StickType CurrentStickType;
 
     public Transform HandTransform;
     public Animator MyAnimator;
@@ -32,6 +35,9 @@ public class WallClimber : MonoBehaviour
     private Vector3 targetPoint;
     private Vector3 targetNormal;
 
+    private Vector2 moveDir;
+    private Vector2 rightStickDir;
+
     private float lastTime;
     private float beginDistance;
 
@@ -39,7 +45,7 @@ public class WallClimber : MonoBehaviour
 
     // Update is called once per frame
     void Update() {
-        if (CurrentType == ClimbingType.Walking && Input.GetAxis("Vertical") > 0f)
+        if (CurrentType == ClimbingType.Walking && moveDir.y > 0f)
             StartClimbing();
 
         if (CurrentType == ClimbingType.Climbing)
@@ -54,6 +60,67 @@ public class WallClimber : MonoBehaviour
             Jumping();
     }
 
+    private void OnRightStick(InputValue value) {
+        rightStickDir = value.Get<Vector2>();
+        //Debug.Log(rightStickDir);
+
+        switch (CurrentStickType) {
+            case StickType.Normal:
+                if (rightStickDir.y < -0.5f) {
+                    CurrentStickType = StickType.Jumping;
+                }
+                return;
+
+            case StickType.Jumping:
+                if (rightStickDir.y > -0.1f && Mathf.Abs(rightStickDir.x) + Mathf.Abs(rightStickDir.y) > 0.9f) {
+                    CurrentStickType = StickType.Normal;
+                    MyRigidbody.isKinematic = false;
+                    TPUC.enabled = true;
+                    MyRigidbody.AddForce((transform.right * rightStickDir.x + transform.up * rightStickDir.y) * 500f);
+                    CurrentType = ClimbingType.Walking;
+                }
+                return;
+        }
+    }
+
+    private void OnMove(InputValue value) {
+        moveDir = value.Get<Vector2>();
+    }
+
+    public void CheckForClimbStart() {
+        RaycastHit hit;
+
+        Vector3 dir = transform.forward - transform.up / 0.8f;
+
+        if(!Physics.Raycast(transform.position + transform.rotation * RaycastPosition, dir, 1.6f) && !Input.GetButton("Jump")) {
+            CurrentType = ClimbingType.CheckingForClimbStart;
+            if (Physics.Raycast(transform.position + new Vector3(0, 1.1f, 0), -transform.up, out hit, 1.6f, SpotLayer))
+                FindSpot(hit, CheckingType.Falling);
+        }
+    }
+
+    public void CheckForPlateau() {
+        RaycastHit hit;
+
+        Vector3 dir = transform.up + transform.forward / 2f;
+
+        if(!Physics.Raycast(HandTransform.position + transform.rotation * VerticalHandOffset, dir, out hit, 1.5f, SpotLayer)) {
+            CurrentType = ClimbingType.ClimbingTowardsPlateau;
+
+            if(Physics.Raycast(HandTransform.position + dir * 1.5f, -Vector3.up, out hit, 1.7f, SpotLayer)) {
+                targetPoint = HandTransform.position + dir * 1.5f;
+            }
+            else {
+                targetPoint = HandTransform.position + dir * 1.5f - transform.rotation * new Vector3(0, -0.2f, 0.25f);
+            }
+
+            targetNormal = -transform.forward;
+
+            MyAnimator.SetBool("Crouch", true);
+            MyAnimator.SetBool("OnGround", true);
+        }
+    }
+
     public void UpdateStats() {
         if(CurrentType != ClimbingType.Walking && TPC.m_IsGrounded && CurrentType != ClimbingType.ClimbingTowardsPoint) {
             CurrentType = ClimbingType.Walking;
@@ -64,11 +131,12 @@ public class WallClimber : MonoBehaviour
         if (CurrentType == ClimbingType.Walking && !TPC.m_IsGrounded)
             CurrentType = ClimbingType.Jumping;
 
-        //CheckForClimbStart
+        if(CurrentType == ClimbingType.Walking && (moveDir.y != 0 || moveDir.x != 0))
+            CheckForClimbStart();
     }
 
     public void StartClimbing() {
-        if(Physics.Raycast(transform.position + transform.rotation * RaycastPosition, transform.forward, 0.4f) && Time.time - lastTime > CoolDown && CurrentType == ClimbingType.Walking) {
+        if(Physics.Raycast(transform.position + transform.rotation * RaycastPosition, transform.forward, 0.4f, SpotLayer) && Time.time - lastTime > CoolDown && CurrentType == ClimbingType.Walking) {
             if(CurrentType == ClimbingType.Walking) {
                 MyRigidbody.AddForce(transform.up * JumpForce);
             }
@@ -98,12 +166,14 @@ public class WallClimber : MonoBehaviour
 
     public void Climb() {
         if(Time.time - lastTime > CoolDown && CurrentType == ClimbingType.Climbing) {
-            if(Input.GetAxis("Vertical") > 0f) {
+            if(moveDir.y > 0.5f) {
                 CheckForSpots(HandTransform.position + transform.rotation * VerticalHandOffset + transform.up * ClimbRange, -transform.up, ClimbRange, CheckingType.Normal);
 
-                //CheckForPlateau();
+
+                if(CurrentType != ClimbingType.ClimbingTowardsPoint)
+                    CheckForPlateau();
             }
-            else if (Input.GetAxis("Vertical") < 0f) {
+            else if (moveDir.y < -0.5f) {
                 CheckForSpots(HandTransform.position - transform.rotation * (VerticalHandOffset + new Vector3(0f, 0.3f, 0f)), -transform.up, ClimbRange, CheckingType.Normal);
 
 
@@ -114,22 +184,22 @@ public class WallClimber : MonoBehaviour
                     oldRotation = transform.rotation;
                 }
             }
-            else if (Input.GetAxis("Horizontal") != 0f) {
-                CheckForSpots(HandTransform.position + transform.rotation * HorizontalHandOffset, transform.right * Input.GetAxis("Horizontal") - transform.up / 3.5f, ClimbRange / 2, CheckingType.Normal);
+            else if (moveDir.x != 0f && moveDir.x > 0.5f || moveDir.x < -0.5f) {
+                CheckForSpots(HandTransform.position + transform.rotation * HorizontalHandOffset, transform.right * moveDir.x - transform.up / 3.5f, ClimbRange / 2, CheckingType.Normal);
 
                 if(CurrentType != ClimbingType.ClimbingTowardsPoint)
-                    CheckForSpots(HandTransform.position + transform.rotation * HorizontalHandOffset, transform.right * Input.GetAxis("Horizontal") - transform.up / 1.5f, ClimbRange / 3f, CheckingType.Normal);
+                    CheckForSpots(HandTransform.position + transform.rotation * HorizontalHandOffset, transform.right * moveDir.x - transform.up / 1.5f, ClimbRange / 3f, CheckingType.Normal);
 
                 if (CurrentType != ClimbingType.ClimbingTowardsPoint)
-                    CheckForSpots(HandTransform.position + transform.rotation * HorizontalHandOffset, transform.right * Input.GetAxis("Horizontal") - transform.up / 6f, ClimbRange / 1.5f, CheckingType.Normal);
+                    CheckForSpots(HandTransform.position + transform.rotation * HorizontalHandOffset, transform.right * moveDir.x - transform.up / 6f, ClimbRange / 1.5f, CheckingType.Normal);
 
                 if (CurrentType != ClimbingType.ClimbingTowardsPoint) {
                     int hor = 0;
 
-                    if (Input.GetAxis("Horizontal") < 0f) {
+                    if (moveDir.x < 0f) {
                         hor = -1;
                     }
-                    if (Input.GetAxis("Horizontal") > 0f) {
+                    if (moveDir.x > 0f) {
                         hor = 1;
                     }
 
@@ -194,7 +264,7 @@ public class WallClimber : MonoBehaviour
                 ray = GetClosestPoint(h.transform, h.point + new Vector3(0, -0.01f, 0), transform.forward / 2.5f);
             }
             else  if (type == CheckingType.Turning) {
-                ray = GetClosestPoint(h.transform, h.point + new Vector3(0, -0.01f, 0), transform.forward / 2.5f - transform.right * Input.GetAxis("Horizontal"));
+                ray = GetClosestPoint(h.transform, h.point + new Vector3(0, -0.01f, 0), transform.forward / 2.5f - transform.right * moveDir.x);
             }
             else if (type == CheckingType.Falling) {
                 ray = GetClosestPoint(h.transform, h.point + new Vector3(0, -0.01f, 0), -transform.forward / 2.5f);
@@ -317,4 +387,11 @@ public enum CheckingType
     Normal,
     Turning,
     Falling
+}
+
+[System.Serializable]
+public enum StickType
+{
+    Normal,
+    Jumping
 }
