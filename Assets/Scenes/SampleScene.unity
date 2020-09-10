@@ -5449,6 +5449,12 @@ Transform:
   m_Father: {fileID: 326460137}
   m_RootOrder: 1
   m_LocalEulerAnglesHint: {x: -18.228, y: 0, z: 0}
+--- !u!95 &821228980 stripped
+Animator:
+  m_CorrespondingSourceObject: {fileID: 1973659565250775146, guid: 7737647c22c1fc64a88d5cd030c352ce,
+    type: 3}
+  m_PrefabInstance: {fileID: 2093324115}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &824448846
 GameObject:
   m_ObjectHideFlags: 0
@@ -11747,9 +11753,21 @@ PrefabInstance:
   m_Modification:
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 127968, guid: 7737647c22c1fc64a88d5cd030c352ce, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 134338, guid: 7737647c22c1fc64a88d5cd030c352ce, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 149790, guid: 7737647c22c1fc64a88d5cd030c352ce, type: 3}
       propertyPath: m_Name
       value: ThirdPersonController
+      objectReference: {fileID: 0}
+    - target: {fileID: 152642, guid: 7737647c22c1fc64a88d5cd030c352ce, type: 3}
+      propertyPath: m_IsActive
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 408730, guid: 7737647c22c1fc64a88d5cd030c352ce, type: 3}
       propertyPath: m_LocalPosition.x
@@ -11794,6 +11812,20 @@ PrefabInstance:
     - target: {fileID: 408730, guid: 7737647c22c1fc64a88d5cd030c352ce, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1065799711, guid: 7737647c22c1fc64a88d5cd030c352ce, type: 3}
+      propertyPath: m_IsActive
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 1790597009662842296, guid: 7737647c22c1fc64a88d5cd030c352ce,
+        type: 3}
+      propertyPath: MyAnimator
+      value: 
+      objectReference: {fileID: 821228980}
+    - target: {fileID: 1790597009662842296, guid: 7737647c22c1fc64a88d5cd030c352ce,
+        type: 3}
+      propertyPath: RaycastPosition.y
+      value: 0.5
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 7737647c22c1fc64a88d5cd030c352ce, type: 3}

@@ -17,6 +17,7 @@ public class WallClimber : MonoBehaviour
     public float ClimbJumpForce = 300f;
     public float BounceForce = 300f;
     public ClimbingType CurrentType = ClimbingType.Walking;
+
     public StickType CurrentStickType;
 
     public Transform HandTransform;
@@ -110,15 +111,26 @@ public class WallClimber : MonoBehaviour
     }
 
     private void Move() {
+        MyAnimator.SetFloat("Speed", moveDir.magnitude);
+
         if (moveDir.magnitude < 0.1f) {
             return;
         }
 
-        Vector3 targetDir = new Vector3(moveDir.x, 0f, moveDir.y);
+        float zMove = moveDir.y;
+
+        if (CurrentType != ClimbingType.Walking)
+            zMove = 0f;
+
+        Vector3 targetDir = new Vector3(moveDir.x, 0f, zMove);
         targetDir = Camera.main.transform.TransformDirection(targetDir);
         targetDir.y = 0.0f;
 
         transform.position = transform.position + targetDir * Time.deltaTime * MoveSpeed;
+
+        if (CurrentType != ClimbingType.Walking)
+            return;
+
         Vector3 newDirection = Vector3.RotateTowards(transform.forward, targetDir, Time.deltaTime * 10f, 0f);
         transform.rotation = Quaternion.LookRotation(newDirection);
     }
@@ -167,8 +179,7 @@ public class WallClimber : MonoBehaviour
 
             targetNormal = -transform.forward;
 
-            MyAnimator.SetBool("Crouch", true);
-            MyAnimator.SetBool("OnGround", true);
+            MyAnimator.SetBool("Hanging", true);
         }
     }
 
@@ -176,6 +187,7 @@ public class WallClimber : MonoBehaviour
         if(CurrentType != ClimbingType.Walking && m_IsGrounded && CurrentType != ClimbingType.ClimbingTowardsPoint) {
             CurrentType = ClimbingType.Walking;
             MyRigidbody.isKinematic = false;
+            MyAnimator.SetBool("Hanging", false);
         }
 
         if (CurrentType == ClimbingType.Walking && !m_IsGrounded)
@@ -382,14 +394,12 @@ public class WallClimber : MonoBehaviour
 
         transform.rotation = Quaternion.Slerp(transform.rotation, lookRotation, Time.deltaTime * ClimbForce);
 
-        MyAnimator.SetBool("OnGround", false);
-
         float distance = Vector3.Distance(transform.position, (targetPoint - transform.rotation * HandTransform.localPosition));
         float percent = -9f * (beginDistance - distance) / beginDistance;
 
-        MyAnimator.SetFloat("Jump", percent);
+        MyAnimator.SetBool("Hanging", true);
 
-        if(distance <= 0.01f && CurrentType == ClimbingType.ClimbingTowardsPoint) {
+        if (distance <= 0.01f && CurrentType == ClimbingType.ClimbingTowardsPoint) {
             transform.position = targetPoint - transform.rotation * HandTransform.localPosition;
             transform.rotation = lookRotation;
             lastTime = Time.time;
