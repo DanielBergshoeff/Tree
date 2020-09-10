@@ -291,6 +291,17 @@
                 },
                 {
                     "name": "",
+                    "id": "1e521bbe-3223-4616-ab80-971943ba03d0",
+                    "path": "<DualShock4GampadiOS>/rightStick",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "RightStick",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
                     "id": "2be982e9-f5f7-4089-b4c3-fb1e2946a609",
                     "path": "<DualShockGamepad>/buttonSouth",
                     "interactions": "",
@@ -304,6 +315,17 @@
                     "name": "",
                     "id": "1f7b8d09-9457-434a-8a88-40ee86c214cd",
                     "path": "<Keyboard>/space",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Jump",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "73e46a01-64aa-4a9b-8ce0-1e7bdfed4e2f",
+                    "path": "<DualShock4GampadiOS>/buttonSouth",
                     "interactions": "",
                     "processors": "",
                     "groups": "",
