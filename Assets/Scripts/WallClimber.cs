@@ -76,7 +76,7 @@ public class WallClimber : MonoBehaviour
                     CurrentStickType = StickType.Normal;
                     MyRigidbody.isKinematic = false;
                     TPUC.enabled = true;
-                    MyRigidbody.AddForce((transform.right * rightStickDir.x + transform.up * rightStickDir.y) * 500f);
+                    MyRigidbody.AddForce((transform.right * rightStickDir.x + transform.up * Mathf.Clamp(rightStickDir.y + 0.5f, 0f, 1f)) * 500f);
                     CurrentType = ClimbingType.Walking;
                 }
                 return;
