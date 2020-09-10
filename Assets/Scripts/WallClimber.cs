@@ -48,7 +48,7 @@ public class WallClimber : MonoBehaviour
     // Update is called once per frame
     void Update() {
         GroundCheck();
-        if(CurrentType == ClimbingType.Walking || CurrentType == ClimbingType.Falling || CurrentType == ClimbingType.Jumping)
+        if(CurrentType == ClimbingType.Walking || CurrentType == ClimbingType.Falling || CurrentType == ClimbingType.Jumping || CurrentType == ClimbingType.CheckingForClimbStart)
             Move();
 
         if (CurrentType == ClimbingType.Walking && moveDir.y > 0f)
@@ -176,7 +176,7 @@ public class WallClimber : MonoBehaviour
             MyRigidbody.isKinematic = false;
         }
 
-        if (CurrentType == ClimbingType.Walking && m_IsGrounded)
+        if (CurrentType == ClimbingType.Walking && !m_IsGrounded)
             CurrentType = ClimbingType.Jumping;
 
         if(CurrentType == ClimbingType.Walking && (moveDir.y != 0 || moveDir.x != 0))
