@@ -14,14 +14,14 @@ public class WallClimber : MonoBehaviour
     public float CoolDown = 0.15f;
     public float ClimbRange = 2f;
     public float JumpForce = 1f;
-    public ClimbingType CurrentType;
+    public float ClimbJumpForce = 300f;
+    public float BounceForce = 300f;
+    public ClimbingType CurrentType = ClimbingType.Walking;
     public StickType CurrentStickType;
 
     public Transform HandTransform;
     public Animator MyAnimator;
     public Rigidbody MyRigidbody;
-    public ThirdPersonUserControl TPUC;
-    public ThirdPersonCharacter TPC;
     public Vector3 VerticalHandOffset;
     public Vector3 HorizontalHandOffset;
     public Vector3 FallHandOffset;
@@ -40,11 +40,17 @@ public class WallClimber : MonoBehaviour
 
     private float lastTime;
     private float beginDistance;
+    private Vector3 m_GroundNormal;
+    private bool m_IsGrounded = false;
 
     private Quaternion oldRotation;
 
     // Update is called once per frame
     void Update() {
+        GroundCheck();
+        if(CurrentType == ClimbingType.Walking || CurrentType == ClimbingType.Falling || CurrentType == ClimbingType.Jumping)
+            Move();
+
         if (CurrentType == ClimbingType.Walking && moveDir.y > 0f)
             StartClimbing();
 
@@ -60,13 +66,32 @@ public class WallClimber : MonoBehaviour
             Jumping();
     }
 
+    private void GroundCheck() {
+        RaycastHit hitInfo;
+        if (Physics.Raycast(transform.position + (Vector3.up * 0.1f), Vector3.down, out hitInfo, 0.3f)) {
+            m_GroundNormal = hitInfo.normal;
+            m_IsGrounded = true;
+            MyAnimator.applyRootMotion = true;
+        }
+        else {
+            m_IsGrounded = false;
+            m_GroundNormal = Vector3.up;
+            MyAnimator.applyRootMotion = false;
+        }
+    }
+
+    private void OnCollisionEnter(Collision collision) {
+        if (collision.collider.CompareTag("Mushroom")) {
+            MyRigidbody.AddForce(Vector3.up * BounceForce);
+        }
+    }
+
     private void OnRightStick(InputValue value) {
         rightStickDir = value.Get<Vector2>();
-        //Debug.Log(rightStickDir);
 
         switch (CurrentStickType) {
             case StickType.Normal:
-                if (rightStickDir.y < -0.5f) {
+                if (rightStickDir.y < -0.5f && CurrentType != ClimbingType.Walking && CurrentType != ClimbingType.Jumping && CurrentType != ClimbingType.Falling) {
                     CurrentStickType = StickType.Jumping;
                 }
                 return;
@@ -75,12 +100,36 @@ public class WallClimber : MonoBehaviour
                 if (rightStickDir.y > -0.1f && Mathf.Abs(rightStickDir.x) + Mathf.Abs(rightStickDir.y) > 0.9f) {
                     CurrentStickType = StickType.Normal;
                     MyRigidbody.isKinematic = false;
-                    TPUC.enabled = true;
-                    MyRigidbody.AddForce((transform.right * rightStickDir.x + transform.up * Mathf.Clamp(rightStickDir.y + 0.5f, 0f, 1f)) * 500f);
-                    CurrentType = ClimbingType.Walking;
+                    MyRigidbody.AddForce((transform.right * rightStickDir.x + transform.up * Mathf.Clamp(rightStickDir.y + 0.5f, 0f, 1f)) * ClimbJumpForce);
+                    CurrentType = ClimbingType.Jumping;
                 }
                 return;
         }
+    }
+
+    private void Move() {
+        if (moveDir.magnitude < 0.1f) {
+            return;
+        }
+
+        Vector3 targetDir = new Vector3(moveDir.x, 0f, moveDir.y);
+        targetDir = Camera.main.transform.TransformDirection(targetDir);
+        targetDir.y = 0.0f;
+
+        transform.position = transform.position + targetDir * Time.deltaTime * MoveSpeed;
+        Vector3 newDirection = Vector3.RotateTowards(transform.forward, targetDir, Time.deltaTime * 10f, 0f);
+        transform.rotation = Quaternion.LookRotation(newDirection);
+    }
+
+    private void Jump() {
+        if (!m_IsGrounded)
+            return;
+
+        MyRigidbody.AddForce(Vector3.up * JumpForce);
+    }
+
+    private void OnJump() {
+        Jump();
     }
 
     private void OnMove(InputValue value) {
@@ -122,13 +171,12 @@ public class WallClimber : MonoBehaviour
     }
 
     public void UpdateStats() {
-        if(CurrentType != ClimbingType.Walking && TPC.m_IsGrounded && CurrentType != ClimbingType.ClimbingTowardsPoint) {
+        if(CurrentType != ClimbingType.Walking && m_IsGrounded && CurrentType != ClimbingType.ClimbingTowardsPoint) {
             CurrentType = ClimbingType.Walking;
-            TPUC.enabled = true;
             MyRigidbody.isKinematic = false;
         }
 
-        if (CurrentType == ClimbingType.Walking && !TPC.m_IsGrounded)
+        if (CurrentType == ClimbingType.Walking && m_IsGrounded)
             CurrentType = ClimbingType.Jumping;
 
         if(CurrentType == ClimbingType.Walking && (moveDir.y != 0 || moveDir.x != 0))
@@ -179,7 +227,6 @@ public class WallClimber : MonoBehaviour
 
                 if(CurrentType != ClimbingType.ClimbingTowardsPoint) {
                     MyRigidbody.isKinematic = false;
-                    TPUC.enabled = true;
                     CurrentType = ClimbingType.Falling;
                     oldRotation = transform.rotation;
                 }
@@ -275,9 +322,8 @@ public class WallClimber : MonoBehaviour
 
             if (ray.CanGoToPoint) {
                 if(CurrentType != ClimbingType.Climbing && CurrentType != ClimbingType.ClimbingTowardsPoint) {
-                    TPUC.enabled = false;
                     MyRigidbody.isKinematic = true;
-                    TPC.m_IsGrounded = false;
+                    m_IsGrounded = false;
                 }
 
                 CurrentType = ClimbingType.ClimbingTowardsPoint;
@@ -355,7 +401,6 @@ public class WallClimber : MonoBehaviour
             CurrentType = ClimbingType.Walking;
 
             MyRigidbody.isKinematic = false;
-            TPUC.enabled = true;
         }
     }
 }
