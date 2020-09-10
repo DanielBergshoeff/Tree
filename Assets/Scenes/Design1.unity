@@ -6255,13 +6255,13 @@ MonoBehaviour:
   CoolDown: 0.1
   ClimbRange: 2.1
   JumpForce: 400
+  ClimbJumpForce: 300
+  BounceForce: 300
   CurrentType: 0
   CurrentStickType: 0
   HandTransform: {fileID: 1065799712}
   MyAnimator: {fileID: 1167893355}
   MyRigidbody: {fileID: 1167893354}
-  TPUC: {fileID: 1167893352}
-  TPC: {fileID: 2093324117}
   VerticalHandOffset: {x: 0, y: 0, z: 0.03}
   HorizontalHandOffset: {x: 0, y: 0.2, z: 0.03}
   FallHandOffset: {x: 0, y: 0.2, z: 0}
@@ -6278,18 +6278,6 @@ MonoBehaviour:
   CheckLayersReachable:
     serializedVersion: 2
     m_Bits: 55
---- !u!114 &1167893352 stripped
-MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: 11444856, guid: 7737647c22c1fc64a88d5cd030c352ce,
-    type: 3}
-  m_PrefabInstance: {fileID: 2093324115}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1167893350}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 521b611700410be45810047f0a74e899, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!54 &1167893354 stripped
 Rigidbody:
   m_CorrespondingSourceObject: {fileID: 5426510, guid: 7737647c22c1fc64a88d5cd030c352ce,
@@ -9073,7 +9061,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 408730, guid: 7737647c22c1fc64a88d5cd030c352ce, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 6.072
+      value: 6.604
       objectReference: {fileID: 0}
     - target: {fileID: 408730, guid: 7737647c22c1fc64a88d5cd030c352ce, type: 3}
       propertyPath: m_LocalPosition.z
@@ -9127,18 +9115,6 @@ Transform:
     type: 3}
   m_PrefabInstance: {fileID: 2093324115}
   m_PrefabAsset: {fileID: 0}
---- !u!114 &2093324117 stripped
-MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: 11469404, guid: 7737647c22c1fc64a88d5cd030c352ce,
-    type: 3}
-  m_PrefabInstance: {fileID: 2093324115}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1167893350}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: ce7a80d520cacc042b5fe14f373d8173, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!1 &2120475819
 GameObject:
   m_ObjectHideFlags: 0
