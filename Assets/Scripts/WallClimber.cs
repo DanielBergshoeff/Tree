@@ -48,8 +48,10 @@ public class WallClimber : MonoBehaviour
     // Update is called once per frame
     void Update() {
         GroundCheck();
-        if(CurrentType == ClimbingType.Walking || CurrentType == ClimbingType.Falling || CurrentType == ClimbingType.Jumping || CurrentType == ClimbingType.CheckingForClimbStart)
-            Move();
+        if (CurrentType == ClimbingType.Walking || CurrentType == ClimbingType.Falling || CurrentType == ClimbingType.Jumping || CurrentType == ClimbingType.CheckingForClimbStart) {
+            if(Time.time - lastTime > 0.3f)
+                Move();
+        }
 
         if (CurrentType == ClimbingType.Walking && moveDir.y > 0f)
             StartClimbing();
