@@ -15,6 +15,7 @@ public class NarrativeManager : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
+        Instance = this;
         narratives = new List<Narrative>();
     }
 
