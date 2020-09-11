@@ -17,22 +17,28 @@ public class NarrativeManager : MonoBehaviour
     {
         Instance = this;
         narratives = new List<Narrative>();
+        myAudioSource = GetComponent<AudioSource>();
     }
 
-    // Update is called once per frame
-    void Update()
-    {
-        
+    private void RemoveOldNarrative() {
+        currentNarrative = null;
+        CheckForNewNarrative();
     }
 
     private void CheckForNewNarrative() {
         if(narratives.Count > 0) {
             currentNarrative = narratives[0];
+            narratives.RemoveAt(0);
             myAudioSource.PlayOneShot(currentNarrative.Audio);
+
+            Invoke("RemoveOldNarrative", currentNarrative.Audio.length + 1f);
         }
     }
 
     public void AddNarrative(Narrative narrative) {
         narratives.Add(narrative);
+
+        if (currentNarrative == null)
+            CheckForNewNarrative();
     }
 }

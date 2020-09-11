@@ -121,8 +121,8 @@ public class WallClimber : MonoBehaviour
 
         float zMove = moveDir.y;
 
-        /*if (CurrentType != ClimbingType.Walking)
-            zMove = 0f;*/
+        if (CurrentType != ClimbingType.Walking)
+            zMove = 0f;
 
         Vector3 targetDir = new Vector3(moveDir.x, 0f, zMove);
         targetDir = Camera.main.transform.TransformDirection(targetDir);
