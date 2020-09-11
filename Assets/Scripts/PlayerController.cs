@@ -1,14 +1,49 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class PlayerController : MonoBehaviour
 {
     public GameObject TrianglePrefab;
+    public Image FadeInScreen;
 
     private GameObject triangleInteract;
     private GameObject interactingItem;
     private bool inBeetleRange = false;
+
+    private float startTime = 0f;
+    private bool fadeIn = false;
+    private float fullFadeTime = 3f;
+
+    private Color color;
+
+    private void Start() {
+        FadeIn(22f);
+    }
+
+    private void Update() {
+        if (fadeIn) {
+            float percent = 1f - (Time.time - startTime) / fullFadeTime;
+            if (percent > 0f) {
+                color.a = percent;
+                FadeInScreen.color = color;
+            }
+            else {
+                color.a = 0f;
+                FadeInScreen.color = color;
+                fadeIn = false;
+            }
+        }
+    }
+
+    private void FadeIn(float time) {
+        FadeInScreen.enabled = true;
+        startTime = Time.time;
+        fadeIn = true;
+        color = FadeInScreen.color;
+        fullFadeTime = time;
+    }
 
     private void OnTriangle() {
         if (inBeetleRange) {
@@ -16,6 +51,7 @@ public class PlayerController : MonoBehaviour
             interactingItem.transform.position = interactingItem.transform.position + Vector3.up * 0.75f;
             interactingItem.GetComponent<SphereCollider>().enabled = false;
             inBeetleRange = false;
+            NarrativeManager.Instance.AddNarrative(interactingItem.GetComponent<Narrative>());
             Destroy(triangleInteract);
         }
     }
@@ -31,7 +67,7 @@ public class PlayerController : MonoBehaviour
         if (other.CompareTag("Narrative")) {
             Narrative n = other.GetComponent<Narrative>();
             NarrativeManager.Instance.AddNarrative(n);
-            Destroy(other.gameObject);
+            Destroy(other.gameObject.GetComponent<Collider>());
         }
     }
 
