@@ -44,6 +44,7 @@ public class WallClimber : MonoBehaviour
     private Vector3 m_GroundNormal;
     private bool m_IsGrounded = false;
 
+
     private Quaternion oldRotation;
 
     // Update is called once per frame
@@ -88,6 +89,7 @@ public class WallClimber : MonoBehaviour
             MyRigidbody.AddForce(Vector3.up * BounceForce);
         }
     }
+    
 
     private void OnRightStick(InputValue value) {
         rightStickDir = value.Get<Vector2>();
@@ -119,8 +121,8 @@ public class WallClimber : MonoBehaviour
 
         float zMove = moveDir.y;
 
-        if (CurrentType != ClimbingType.Walking)
-            zMove = 0f;
+        /*if (CurrentType != ClimbingType.Walking)
+            zMove = 0f;*/
 
         Vector3 targetDir = new Vector3(moveDir.x, 0f, zMove);
         targetDir = Camera.main.transform.TransformDirection(targetDir);
