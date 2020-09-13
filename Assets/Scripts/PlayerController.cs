@@ -13,7 +13,7 @@ public class PlayerController : MonoBehaviour
     private bool inBeetleRange = false;
 
     private float startTime = 0f;
-    private bool fadeIn = false;
+    public bool FadingIn = false;
     private float fullFadeTime = 3f;
 
     private Color color;
@@ -23,7 +23,7 @@ public class PlayerController : MonoBehaviour
     }
 
     private void Update() {
-        if (fadeIn) {
+        if (FadingIn) {
             float percent = 1f - (Time.time - startTime) / fullFadeTime;
             if (percent > 0f) {
                 color.a = percent;
@@ -32,7 +32,7 @@ public class PlayerController : MonoBehaviour
             else {
                 color.a = 0f;
                 FadeInScreen.color = color;
-                fadeIn = false;
+                FadingIn = false;
             }
         }
     }
@@ -40,7 +40,7 @@ public class PlayerController : MonoBehaviour
     private void FadeIn(float time) {
         FadeInScreen.enabled = true;
         startTime = Time.time;
-        fadeIn = true;
+        FadingIn = true;
         color = FadeInScreen.color;
         fullFadeTime = time;
     }

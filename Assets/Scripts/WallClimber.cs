@@ -43,12 +43,20 @@ public class WallClimber : MonoBehaviour
     private float beginDistance;
     private Vector3 m_GroundNormal;
     private bool m_IsGrounded = false;
+    private PlayerController myPlayerController;
 
 
     private Quaternion oldRotation;
 
+    private void Start() {
+        myPlayerController = GetComponent<PlayerController>();
+    }
+
     // Update is called once per frame
     void Update() {
+        if (myPlayerController.FadingIn)
+            return;
+
         GroundCheck();
         if (CurrentType == ClimbingType.Walking || CurrentType == ClimbingType.Falling || CurrentType == ClimbingType.Jumping || CurrentType == ClimbingType.CheckingForClimbStart) {
             if(Time.time - lastTime > 0.3f)
